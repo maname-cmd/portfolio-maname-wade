@@ -1,0 +1,25 @@
+SITE PORTFOLIO MANAME WADE — version HTML pour Netlify
+======================================================
+
+Contenu du dossier
+- index.html ................ page d'accueil
+- projets.html, parcours.html, contact.html, mentions-legales.html
+- projet-*.html ............. les 11 fiches projets
+- merci.html, 404.html ...... page de remerciement du formulaire, page d'erreur
+- tous les autres fichiers (images .webp, vidéos .mp4, styles .css, script .js, PDF)
+  sont à la racine, sans sous-dossier : cela facilite l'envoi sur GitHub
+- netlify.toml .............. réglages Netlify (aucune commande de build)
+
+Mettre en ligne (méthode GitHub + Netlify)
+1. github.com > New repository > nom : portfolio-maname-wade > Create repository.
+2. Cliquer sur « uploading an existing file », glisser TOUT le contenu de ce dossier
+   (pas le dossier lui-même), puis « Commit changes ».
+3. app.netlify.com > Add new site > Import an existing project > GitHub >
+   choisir le dépôt > laisser les champs vides > Deploy.
+4. Activer les formulaires : Netlify > Forms > « Enable form detection »,
+   puis relancer un déploiement (Deploys > Trigger deploy).
+   Le formulaire de contact apparaît dans Netlify > Forms après le premier envoi.
+   Pour recevoir les messages par e-mail : Site configuration > Forms >
+   Form notifications > Add notification > Email notification.
+
+Méthode express sans GitHub : glisser ce dossier sur app.netlify.com/drop
