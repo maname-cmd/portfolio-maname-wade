@@ -183,6 +183,46 @@
     muteBtn.addEventListener('click', function () { setSound(false); poster.focus(); });
   }
 
+
+  /* ---------- Lecture des vidéos YouTube dans une fenêtre (cartes avec data-yt) ---------- */
+  var ytCards = document.querySelectorAll('a[data-yt]');
+  if (ytCards.length && typeof HTMLDialogElement === 'function') {
+    var dlg = document.createElement('dialog');
+    dlg.className = 'vmodal';
+    dlg.setAttribute('aria-label', 'Lecture de la vidéo');
+    dlg.innerHTML = '<div class="vmodal-box"><div class="vmodal-top"><p class="vmodal-title"></p>' +
+      '<button class="vmodal-close" type="button" aria-label="Fermer la vidéo"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>' +
+      '<div class="vmodal-player"></div><a class="vmodal-link" target="_blank" rel="noopener">Ouvrir sur YouTube</a></div>';
+    page.appendChild(dlg);
+    var player = dlg.querySelector('.vmodal-player'), titleEl = dlg.querySelector('.vmodal-title'), ytLink = dlg.querySelector('.vmodal-link');
+    var opener = null;
+    var closeDlg = function () { if (dlg.open) dlg.close(); };
+    dlg.addEventListener('close', function () { player.innerHTML = ''; document.body.classList.remove('menu-open'); if (opener) opener.focus(); });
+    dlg.querySelector('.vmodal-close').addEventListener('click', closeDlg);
+    dlg.addEventListener('click', function (e) { if (e.target === dlg) closeDlg(); });
+    ytCards.forEach(function (a) {
+      a.addEventListener('click', function (e) {
+        if (e.metaKey || e.ctrlKey || e.shiftKey) return;
+        e.preventDefault();
+        opener = a;
+        var id = a.getAttribute('data-yt'), t = (a.querySelector('h2, h3') || {}).textContent || 'Vidéo';
+        titleEl.textContent = t;
+        dlg.setAttribute('aria-label', t);
+        ytLink.href = a.getAttribute('href');
+        var im = a.querySelector('img');
+        if (im) { var pv = document.createElement('img'); pv.className = 'vmodal-poster'; pv.src = im.getAttribute('src'); pv.alt = ''; player.appendChild(pv); }
+        var f = document.createElement('iframe');
+        f.src = 'https://www.youtube-nocookie.com/embed/' + id + '?autoplay=1&rel=0&modestbranding=1&playsinline=1';
+        f.title = t;
+        f.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
+        f.allowFullscreen = true;
+        player.appendChild(f);
+        document.body.classList.add('menu-open');
+        dlg.showModal();
+      });
+    });
+  }
+
   /* ---------- Accordéon des certifications ---------- */
   document.querySelectorAll('.acc-btn[aria-controls]').forEach(function (btn) {
     btn.addEventListener('click', function () {
