@@ -69,6 +69,16 @@
         c.hidden = !vis;
         if (c.getAttribute('data-wide')) c.classList.toggle('work-card--wide', f === 'all');
       });
+      var heads = document.querySelectorAll('[data-group-head]');
+      heads.forEach(function (h) { h.hidden = f !== 'video'; });
+      var grid = document.querySelector('.grid');
+      if (grid && page.classList.contains('anim-on')) {
+        var useB = grid.classList.contains('grid-anim-a');
+        grid.classList.remove('grid-anim-a', 'grid-anim-b');
+        void grid.offsetWidth;
+        grid.classList.add(useB ? 'grid-anim-b' : 'grid-anim-a');
+        shown.forEach(function (c, i) { c.style.animationDelay = Math.min(i * 50, 500) + 'ms'; });
+      }
       var total = shown.length;
       shown.forEach(function (c, i) {
         var idx = c.querySelector('[data-index]');
@@ -78,6 +88,9 @@
       if (track) { track.scrollTo({ left: 0 }); updateBar(); }
     };
     chips.forEach(function (c) { c.addEventListener('click', function () { setFilter(c.getAttribute('data-filter')); }); });
+    var h0 = (location.hash || '').replace('#', '');
+    var valid = Array.prototype.some.call(chips, function (c) { return c.getAttribute('data-filter') === h0; });
+    setFilter(valid ? h0 : 'all');
   }
 
   /* ---------- Carrousel de l'accueil ---------- */
@@ -205,7 +218,7 @@
         if (e.metaKey || e.ctrlKey || e.shiftKey) return;
         e.preventDefault();
         opener = a;
-        var id = a.getAttribute('data-yt'), t = (a.querySelector('h2, h3') || {}).textContent || 'Vidéo';
+        var id = a.getAttribute('data-yt'), t = a.getAttribute('data-title') || (a.querySelector('h2, h3') || {}).textContent || 'Vidéo';
         titleEl.textContent = t;
         dlg.setAttribute('aria-label', t);
         ytLink.href = a.getAttribute('href');
@@ -217,10 +230,45 @@
         f.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
         f.allowFullscreen = true;
         player.appendChild(f);
+        dlg.classList.toggle('vmodal--short', a.hasAttribute('data-yt-short'));
         document.body.classList.add('menu-open');
         dlg.showModal();
       });
     });
+  }
+
+
+  /* ---------- Apparitions au défilement (cartes, compétences, parcours) ---------- */
+  var reveals = document.querySelectorAll('[data-reveal]');
+  if (reveals.length) {
+    if (page.classList.contains('anim-on')) {
+      var ro = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) { if (en.isIntersecting) { en.target.classList.add('is-in'); ro.unobserve(en.target); } });
+      }, { threshold: 0.2 });
+      reveals.forEach(function (el) { ro.observe(el); });
+    } else { reveals.forEach(function (el) { el.classList.add('is-in'); }); }
+  }
+
+  /* ---------- Frise du parcours : la ligne se dessine au défilement ---------- */
+  var tl = document.querySelector('[data-timeline]');
+  if (tl && page.classList.contains('anim-on')) {
+    var bar2 = tl.querySelector('.timeline-progress');
+    var tItems = Array.prototype.slice.call(tl.querySelectorAll('.timeline-item'));
+    tl.classList.add('tl-anim');
+    tItems.forEach(function (it) { it.classList.remove('is-active'); });
+    var marks = [0.02, 0.4, 0.8];
+    var updTl = function () {
+      var vh = window.innerHeight || 800, r = tl.getBoundingClientRect();
+      var p = Math.max(0, Math.min(1, (vh * 0.65 - r.top) / Math.max(1, r.height)));
+      if (bar2) bar2.style.height = Math.round(p * 100) + '%';
+      tItems.forEach(function (it, i) {
+        if (it.getBoundingClientRect().top < vh * 0.85) it.classList.add('is-shown');
+        it.classList.toggle('is-active', p > (marks[i] !== undefined ? marks[i] : i / tItems.length));
+      });
+    };
+    window.addEventListener('scroll', updTl, { passive: true });
+    window.addEventListener('resize', updTl);
+    updTl();
   }
 
   /* ---------- Accordéon des certifications ---------- */
